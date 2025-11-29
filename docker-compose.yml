@@ -1,0 +1,12 @@
+services:
+  postgres-auth:
+    image: postgres:17
+    environment:
+      - POSTGRES_DB: auth_db
+      - POSTGERS_USER: postgres
+      - POSTGERS_PASSWORD: postgres
+    volumes:
+      - auth_data:/var/lib/postgresql/data
+
+volumes:
+  auth_data:
