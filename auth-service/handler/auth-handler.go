@@ -20,7 +20,7 @@ func NewAuthHandler(s *service.AuthService) *AuthHandler {
 }
 
 func (h *AuthHandler) Login(ctx *gin.Context) {
-	var req model.User
+	var req model.UserDTO
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		log.Printf("Invalid JSON at login request: %v", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
@@ -34,7 +34,7 @@ func (h *AuthHandler) Login(ctx *gin.Context) {
 		return
 	}
 
-	if err := bcrypt.CompareHashAndPassword(user.Userpassword, []byte(req.Userpassword)); err != nil {
+	if err := bcrypt.CompareHashAndPassword(user.Userpassword, []byte(req.Password)); err != nil {
 		log.Printf("Invalid username or password: %v", err)
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
 		return
@@ -52,14 +52,14 @@ func (h *AuthHandler) Login(ctx *gin.Context) {
 }
 
 func (h *AuthHandler) Register(ctx *gin.Context) {
-	var req model.User
+	var req model.UserDTO
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		log.Printf("Invalid JSON at register request: %v", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON at register request"})
 		return
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Userpassword), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		log.Printf("Hashed password generation failed: %v", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process registration"})
