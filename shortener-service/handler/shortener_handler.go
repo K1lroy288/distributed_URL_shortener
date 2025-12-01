@@ -24,7 +24,7 @@ func (h *ShortenerHandler) SaveCode(ctx *gin.Context) {
 	claims, err := utils.ValidateJWT(token)
 	if err != nil {
 		log.Printf("Invalid token: %v", err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid token"})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 		return
 	}
 
@@ -43,10 +43,11 @@ func (h *ShortenerHandler) SaveCode(ctx *gin.Context) {
 			return
 		}
 
+		ownerIdFloat := claims["user_id"].(float64)
 		url := model.Url{
 			Long_url:   req,
 			Short_code: code,
-			Owner_id:   claims["user_id"].(int),
+			Owner_id:   int(ownerIdFloat),
 		}
 
 		exist, err := h.service.SaveCode(url)
@@ -71,21 +72,15 @@ func (h *ShortenerHandler) GetLink(ctx *gin.Context) {
 	_, err := utils.ValidateJWT(token)
 	if err != nil {
 		log.Printf("Invalid token: %v", err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid token"})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 		return
 	}
 
 	code := ctx.Param("shortCode")
 	url, err := h.service.GetLink(code)
-	if err != nil {
+	if err != nil || url == nil {
 		log.Printf("error git link: %v", err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Such link don't exist"})
-		return
-	}
-
-	if url == nil {
-		log.Printf("error git link: %v", err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Such link don't exist"})
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "Link not found"})
 		return
 	}
 
