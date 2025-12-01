@@ -3,6 +3,7 @@ package handler
 import (
 	"log"
 	"net/http"
+	"shortener-service/config"
 	"shortener-service/model"
 	"shortener-service/service"
 	"shortener-service/utils"
@@ -55,6 +56,11 @@ func (h *ShortenerHandler) SaveCode(ctx *gin.Context) {
 		}
 
 		if !exist {
+			cfg := config.GetConfig()
+
+			url := "http://" + cfg.Host + ":" + cfg.Port + "/short/" + code
+
+			ctx.JSON(http.StatusCreated, gin.H{"url": url})
 			break
 		}
 	}
