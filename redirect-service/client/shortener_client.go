@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"redirect-service/model"
 )
 
 type ShortenerClient interface {
-	Resolve(ctx context.Context, shortCode string) (string, error)
+	Resolve(ctx context.Context, shortCode string) (*model.ShortenerResponse, error)
 }
 
 type shortenerClient struct {
@@ -23,35 +24,31 @@ func NewShortenerClient(baseURL string) *shortenerClient {
 	}
 }
 
-type resolveResponse struct {
-	LongURL string `json:"long_url"`
-}
-
-func (s *shortenerClient) Resolve(ctx context.Context, shortCode string) (string, error) {
+func (s *shortenerClient) Resolve(ctx context.Context, shortCode string) (*model.ShortenerResponse, error) {
 	url := fmt.Sprintf("%s/short/%s", s.baseURL, shortCode)
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	resp, err := s.client.Do(req)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusNotFound {
-		return "", fmt.Errorf("link not found")
+		return nil, fmt.Errorf("link not found")
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("shortener service error: %d", resp.StatusCode)
+		return nil, fmt.Errorf("shortener service error: %d", resp.StatusCode)
 	}
 
-	var res resolveResponse
+	var res *model.ShortenerResponse
 	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return res.LongURL, nil
+	return res, nil
 }

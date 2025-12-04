@@ -70,7 +70,7 @@ services:
   redirect-service:
     image: redirect-service:latest
     build: 
-      context: ./shortener-service
+      context: ./redirect-service
       dockerfile: Dockerfile
     ports:
       - "8002:8002"

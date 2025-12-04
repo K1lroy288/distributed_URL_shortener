@@ -59,7 +59,7 @@ func (h *ShortenerHandler) SaveCode(ctx *gin.Context) {
 		if !exist {
 			cfg := config.GetConfig()
 
-			url := "http://" + cfg.Host + ":" + cfg.RedirectPort + "/short/" + code
+			url := "http://" + cfg.Host + ":" + cfg.GatewayPort + "/" + code
 
 			ctx.JSON(http.StatusCreated, gin.H{"url": url})
 			break
@@ -68,14 +68,6 @@ func (h *ShortenerHandler) SaveCode(ctx *gin.Context) {
 }
 
 func (h *ShortenerHandler) GetLink(ctx *gin.Context) {
-	token := ctx.Request.Header.Get("Authorization")
-	_, err := utils.ValidateJWT(token)
-	if err != nil {
-		log.Printf("Invalid token: %v", err)
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
-		return
-	}
-
 	code := ctx.Param("shortCode")
 	url, err := h.service.GetLink(code)
 	if err != nil || url == nil {
@@ -84,5 +76,5 @@ func (h *ShortenerHandler) GetLink(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"long_url": url.Long_url})
+	ctx.JSON(http.StatusOK, gin.H{"long_url": url.Long_url, "owner_id": url.Owner_id})
 }

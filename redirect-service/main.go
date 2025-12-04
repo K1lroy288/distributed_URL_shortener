@@ -15,7 +15,7 @@ func main() {
 	cfg := config.GetConfig()
 
 	redisAddr := cfg.RedisHost + ":" + cfg.RedisPort
-	shortenerAddr := cfg.ShortenerHost + ":" + cfg.ShortenerPort
+	shortenerAddr := "http://" + cfg.ShortenerHost + ":" + cfg.ShortenerPort
 
 	redis := client.NewRedisClient(redisAddr)
 	shortener := client.NewShortenerClient(shortenerAddr)
@@ -25,7 +25,7 @@ func main() {
 	r := gin.Default()
 
 	r.GET("/redirect/health", func(ctx *gin.Context) {
-		ctx.String(http.StatusOK, "Shortener service is up!")
+		ctx.String(http.StatusOK, "Redirect service is up!")
 	})
 
 	r.GET("/:shortCode", handler.Resolve)
