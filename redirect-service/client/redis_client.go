@@ -39,8 +39,8 @@ func (r *redisClient) SaveLink(ctx context.Context, shortCode, longLink string, 
 }
 
 func (r *redisClient) GetLink(ctx context.Context, shortCode string) (string, error) {
-	var url string
-	if err := r.client.HGet(ctx, shortCode, "url").Scan(url); err != nil {
+	url, err := r.client.HGet(ctx, shortCode, "url").Result()
+	if err != nil {
 		return "", err
 	}
 
